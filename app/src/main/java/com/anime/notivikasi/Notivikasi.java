@@ -2,6 +2,7 @@ package com.anime.notivikasi;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -14,11 +15,12 @@ import com.firebase.jobdispatcher.Lifetime;
 import com.firebase.jobdispatcher.RetryStrategy;
 import com.firebase.jobdispatcher.Trigger;
 
+import java.util.concurrent.TimeUnit;
+
 public class Notivikasi extends AppCompatActivity implements View.OnClickListener {
     Button set_jadwal,cancel;
     FirebaseJobDispatcher mDispacher;
     private String DISPATCHER_TAG = "mydispatcher";
-    private String CITY = "jakarta";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,21 +49,22 @@ public class Notivikasi extends AppCompatActivity implements View.OnClickListene
             }
         }
 
-
+    final int periodicity = 5;
+    final int toleranceInterval = 1;
 
     public void startDispatcher(){
+        Log.d("TAG", "startDispatcher: "+periodicity);
+        Log.d("TAG", "startDispatcher: "+toleranceInterval);
 
 
         Bundle myExtrasBundle = new Bundle();
-        myExtrasBundle.putString(MyJobService.EXTRA_CITY,CITY);
-
 
         Job myjob = mDispacher.newJobBuilder()
                 .setService(MyJobService.class)
                 .setTag(DISPATCHER_TAG)
                 .setRecurring(true)
-                .setLifetime(Lifetime.UNTIL_NEXT_BOOT)
-                .setTrigger(Trigger.executionWindow(0,60))
+                .setLifetime(Lifetime.FOREVER)
+                .setTrigger(Trigger.executionWindow(periodicity,periodicity+toleranceInterval))
                 .setReplaceCurrent(true)
                 .setRetryStrategy(RetryStrategy.DEFAULT_EXPONENTIAL)
                 .setConstraints(Constraint.ON_UNMETERED_NETWORK,Constraint.DEVICE_CHARGING,Constraint.DEVICE_IDLE
